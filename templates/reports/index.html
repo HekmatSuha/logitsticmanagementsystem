@@ -67,7 +67,6 @@
         <div class="border-b border-[#cfdbe7] px-4 dark:border-slate-700">
           <nav role="tablist" aria-label="Report data views" class="flex gap-8" data-tablist>
             {% for tab in tabs %}
-            {% with is_active=active_tab == tab.key %}
             <button
               type="submit"
               form="tab-query-form"
@@ -76,16 +75,15 @@
               role="tab"
               id="tab-{{ tab.key }}"
               aria-controls="panel-{{ tab.key }}"
-              aria-selected="{{ is_active|yesno:'true,false' }}"
-              tabindex="{% if is_active %}0{% else %}-1{% endif %}"
+              aria-selected="{% if active_tab == tab.key %}true{% else %}false{% endif %}"
+              tabindex="{% if active_tab == tab.key %}0{% else %}-1{% endif %}"
               data-tab-target="{{ tab.key }}"
               data-active-class="border-b-primary text-slate-900 dark:text-slate-50"
               data-inactive-class="border-b-transparent text-slate-500 dark:text-slate-400"
-              class="flex flex-col items-center justify-center border-b-[3px] pb-[13px] pt-4 text-sm font-bold leading-normal tracking-[0.015em] transition-colors {{ 'border-b-primary text-slate-900 dark:text-slate-50' if is_active else 'border-b-transparent text-slate-500 dark:text-slate-400' }}"
+              class="flex flex-col items-center justify-center border-b-[3px] pb-[13px] pt-4 text-sm font-bold leading-normal tracking-[0.015em] transition-colors {% if active_tab == tab.key %}border-b-primary text-slate-900 dark:text-slate-50{% else %}border-b-transparent text-slate-500 dark:text-slate-400{% endif %}"
             >
               <span>{{ tab.label }}</span>
             </button>
-            {% endwith %}
             {% endfor %}
           </nav>
           <form id="tab-query-form" method="get" class="hidden">

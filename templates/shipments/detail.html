@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% block head %}
+  {{ block.super }}
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-sA+e2a4KcXGZo6d3xG0LkM651Emp01q7aP6C0wHqTCw="
+    crossorigin=""
+  />
+{% endblock %}
+{% block title %}Shipment {{ object.tracking_id }} - Logistics Pro{% endblock %}
+{% block content %}
+<div class="flex h-full flex-col gap-6 p-6 lg:p-10">
+  <nav class="text-xs font-medium text-gray-500 dark:text-gray-400">
+    <a href="{% url 'dashboard' %}" class="hover:text-primary">Dashboard</a>
+    <span class="mx-1 text-gray-400">/</span>
+    <a href="{% url 'shipments:list' %}" class="hover:text-primary">Shipments</a>
+    <span class="mx-1 text-gray-400">/</span>
+    <span class="text-text-light dark:text-text-dark">{{ object.tracking_id }}</span>
+  </nav>
+
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <div class="flex flex-col gap-1">
+      <h1 class="text-3xl font-bold tracking-tight text-text-light dark:text-text-dark">
+        Shipment {{ object.tracking_id }}
+      </h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400">
+        Detailed view of the shipment lifecycle and metadata.
+      </p>
+    </div>
+    <a
+      href="{% url 'shipments:list' %}"
+      class="inline-flex items-center justify-center gap-2 rounded-lg border border-border-light px-4 py-2 text-sm font-semibold text-text-light hover:bg-gray-100 dark:border-border-dark dark:text-text-dark dark:hover:bg-white/10"
+    >
+      <span class="material-symbols-outlined text-base">arrow_back</span>
+      Back to Shipments
+    </a>
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-3">
+    <section class="rounded-2xl border border-border-light bg-card-light p-6 shadow-sm dark:border-border-dark dark:bg-card-dark lg:col-span-2">
+      <header class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-lg font-bold text-text-light dark:text-text-dark">Shipment Details</h2>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Last updated {{ object.last_updated|timesince }} ago</p>
+        </div>
+        <span class="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+          {{ object.get_status_display }}
+        </span>
+      </header>
+
+      <div class="mt-6 grid gap-4 sm:grid-cols-2 text-sm">
+        <div>
+          <p class="text-[11px] uppercase tracking-wide text-gray-400 dark:text-gray-500">Route</p>
+          <p class="font-semibold text-text-light dark:text-text-dark">{{ object.origin }} &rarr; {{ object.destination }}</p>
+        </div>
+        <div>
+          <p class="text-[11px] uppercase tracking-wide text-gray-400 dark:text-gray-500">Priority</p>
+          <p class="font-semibold text-text-light dark:text-text-dark">{{ object.get_priority_display }}</p>
+        </div>
+        <div>
+          <p class="text-[11px] uppercase tracking-wide text-gray-400 dark:text-gray-500">Carrier</p>
+          <p class="font-semibold text-text-light dark:text-text-dark">{{ object.carrier|default:"—" }}</p>
+        </div>
+        <div>
+          <p class="text-[11px] uppercase tracking-wide text-gray-400 dark:text-gray-500">Driver Contact</p>
+          <p class="font-semibold text-text-light dark:text-text-dark">{{ object.driver_contact|default:"—" }}</p>
+        </div>
+        <div>
+          <p class="text-[11px] uppercase tracking-wide text-gray-400 dark:text-gray-500">Contents</p>
+          <p class="font-semibold text-text-light dark:text-text-dark">{{ object.contents|default:"—" }}</p>
+        </div>
+        <div>
+          <p class="text-[11px] uppercase tracking-wide text-gray-400 dark:text-gray-500">ETA</p>
+          <p class="text-gray-600 dark:text-gray-300">{{ object.eta|date:"M j, Y, g:i A"|default:"TBD" }}</p>
+        </div>
+        <div>
+          <p class="text-[11px] uppercase tracking-wide text-gray-400 dark:text-gray-500">Departure</p>
+          <p class="text-gray-600 dark:text-gray-300">{{ object.departure_time|date:"M j, Y, g:i A"|default:"TBD" }}</p>
+        </div>
+      </div>
+
+      <div class="mt-6 grid gap-4 lg:grid-cols-2">
+        <div class="rounded-lg border border-dashed border-border-light p-4 dark:border-border-dark">
+          <p class="text-sm font-semibold text-text-light dark:text-text-dark">Route Summary</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">{{ object.origin }} &rarr; {{ object.destination }}</p>
+        </div>
+        <div class="rounded-lg border border-border-light bg-gray-100 p-2 dark:border-border-dark dark:bg-gray-800">
+          <div id="shipment-map" class="h-[220px] w-full rounded-md"></div>
+          <p class="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">Simulated map powered by OpenStreetMap</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="rounded-2xl border border-border-light bg-card-light p-6 shadow-sm dark:border-border-dark dark:bg-card-dark">
+      <div class="mb-6">
+        <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-300">Add Transit Event</h3>
+        <form method="post" class="mt-4 grid gap-4 md:grid-cols-2">
+          {% csrf_token %}
+          {% for field in event_form %}
+          <div class="{% if forloop.counter > 2 %}md:col-span-2{% endif %}">
+            <label for="{{ field.id_for_label }}" class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-300">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+            <p class="text-xs text-danger">{{ field.errors|join:", " }}</p>
+            {% endif %}
+          </div>
+          {% endfor %}
+          <div class="md:col-span-2 flex items-center gap-3">
+            <button type="submit" class="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90">
+              <span class="material-symbols-outlined text-base">add</span>
+              Add Event
+            </button>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Use your local timezone when entering timestamps.</p>
+          </div>
+        </form>
+      </div>
+      <h3 class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-300">Transit History</h3>
+      <div class="space-y-4">
+        {% for event in object.events.all %}
+        <div class="flex gap-3 rounded-xl border border-border-light px-3 py-3 dark:border-border-dark">
+          <div class="mt-1 flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary">
+            <span class="material-symbols-outlined text-base">{{ event.icon|default:"local_shipping" }}</span>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-text-light dark:text-text-dark">{{ event.description }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              {{ event.location|default:"Location unavailable" }} &middot; {{ event.timestamp|date:"M j, Y, g:i A" }}
+            </p>
+          </div>
+        </div>
+        {% empty %}
+        <p class="text-sm text-gray-500 dark:text-gray-400">No event updates recorded yet.</p>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+</div>
+
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-VL+3fL0qMExdV9yAjVTxXj2CprGL16O3EOkMh1BZuXE="
+  crossorigin=""
+></script>
+<script>
+(function () {
+  const mapContainer = document.getElementById("shipment-map");
+  if (!mapContainer || typeof L === "undefined") {
+    return;
+  }
+
+  const originLabel = "{{ object.origin|escapejs }}";
+  const destinationLabel = "{{ object.destination|escapejs }}";
+
+  const map = L.map(mapContainer, { zoomControl: false }).setView([20, 0], 2);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 18,
+    attribution: "&copy; OpenStreetMap contributors",
+  }).addTo(map);
+
+  function geocode(place) {
+    if (!place) {
+      return Promise.resolve(null);
+    }
+    const url =
+      "https://nominatim.openstreetmap.org/search?format=json&limit=1&q=" +
+      encodeURIComponent(place);
+    return fetch(url, {
+      headers: { "Accept-Language": "en" },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (!data || !data.length) return null;
+        return {
+          lat: parseFloat(data[0].lat),
+          lon: parseFloat(data[0].lon),
+          display: data[0].display_name || place,
+        };
+      })
+      .catch(() => null);
+  }
+
+  Promise.all([geocode(originLabel), geocode(destinationLabel)]).then(
+    ([originPoint, destinationPoint]) => {
+      const fallbackOrigin = { lat: 40.7128, lon: -74.006 };
+      const fallbackDestination = { lat: 34.0522, lon: -118.2437 };
+
+      const origin = originPoint || fallbackOrigin;
+      const destination = destinationPoint || fallbackDestination;
+
+      const originMarker = L.marker([origin.lat, origin.lon], {
+        title: originLabel,
+      }).addTo(map);
+      originMarker.bindPopup(
+        `<strong>Origin</strong><br>${originPoint ? origin.display : originLabel}`
+      );
+
+      const destinationMarker = L.marker([destination.lat, destination.lon], {
+        title: destinationLabel,
+      }).addTo(map);
+      destinationMarker.bindPopup(
+        `<strong>Destination</strong><br>${
+          destinationPoint ? destination.display : destinationLabel
+        }`
+      );
+
+      const route = L.polyline(
+        [
+          [origin.lat, origin.lon],
+          [destination.lat, destination.lon],
+        ],
+        { color: "#1173d4", weight: 3, opacity: 0.8, dashArray: "6 6" }
+      ).addTo(map);
+
+      map.fitBounds(route.getBounds(), { padding: [40, 40] });
+    }
+  );
+})();
+</script>
+{% endblock %}

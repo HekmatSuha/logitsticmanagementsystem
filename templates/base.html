@@ -1,0 +1,265 @@
+{% load static %}
+<!DOCTYPE html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Logistics Pro{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#1173d4",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101922",
+              success: "#36B37E",
+              warning: "#FFAB00",
+              danger: "#DE350B",
+              "text-light": "#172B4D",
+              "text-dark": "#EAECEF",
+              "card-light": "#FFFFFF",
+              "card-dark": "#1C2A38",
+              "border-light": "#dfe3e7",
+              "border-dark": "#323d49",
+            },
+            fontFamily: { display: ["Inter", "sans-serif"] },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+      }
+    </style>
+    {% block head %}{% endblock %}
+  </head>
+  <body
+    class="bg-background-light dark:bg-background-dark font-display text-text-light dark:text-text-dark"
+  >
+    <div class="flex h-screen w-full overflow-hidden">
+      <!-- Sidebar -->
+      <aside
+        class="flex w-64 flex-col border-r border-border-light bg-card-light p-4 dark:border-border-dark dark:bg-card-dark"
+      >
+        <div class="mb-8 flex gap-3">
+          <div
+            class="flex size-10 items-center justify-center rounded-full bg-primary/20 text-primary"
+          >
+            <span class="material-symbols-outlined text-xl"
+              >local_shipping</span
+            >
+          </div>
+          <div class="flex flex-col">
+            <h1
+              class="text-base font-bold leading-normal text-text-light dark:text-text-dark"
+            >
+              Logistics Pro
+            </h1>
+            <p
+              class="text-sm font-normal leading-normal text-gray-500 dark:text-gray-400"
+            >
+              Management
+            </p>
+          </div>
+        </div>
+        <nav class="flex flex-1 flex-col gap-2">
+          {% with path=request.path %}
+          <a
+            href="{% url 'dashboard' %}"
+            class="flex items-center gap-3 rounded-lg px-3 py-2 {% if path == '/' %}bg-primary/10 dark:bg-primary/20 text-primary{% else %}hover:bg-gray-100 dark:hover:bg-white/10{% endif %}"
+          >
+            <span
+              class="material-symbols-outlined text-lg {% if path == '/' %}!text-primary{% endif %}"
+              >dashboard</span
+            >
+            <p class="text-sm font-medium leading-normal">Dashboard</p>
+          </a>
+          <a
+            href="{% url 'shipments:list' %}"
+            class="flex items-center gap-3 rounded-lg px-3 py-2 {% if path|slice:':10' == '/shipments' %}bg-primary/10 dark:bg-primary/20 text-primary{% else %}hover:bg-gray-100 dark:hover:bg-white/10{% endif %}"
+          >
+            <span
+              class="material-symbols-outlined text-lg {% if path|slice:':10' == '/shipments' %}!text-primary{% endif %}"
+              >forklift</span
+            >
+            <p class="text-sm font-medium leading-normal">Shipments</p>
+          </a>
+          <a
+            href="{% url 'inventory:list' %}"
+            class="flex items-center gap-3 rounded-lg px-3 py-2 {% if path|slice:':10' == '/inventory' %}bg-primary/10 dark:bg-primary/20 text-primary{% else %}hover:bg-gray-100 dark:hover:bg-white/10{% endif %}"
+          >
+            <span
+              class="material-symbols-outlined text-lg {% if path|slice:':10' == '/inventory' %}!text-primary{% endif %}"
+              >inventory_2</span
+            >
+            <p class="text-sm font-medium leading-normal">Inventory</p>
+          </a>
+          <a
+            href="{% url 'orders:list' %}"
+            class="flex items-center gap-3 rounded-lg px-3 py-2 {% if path|slice:':7' == '/orders' %}bg-primary/10 dark:bg-primary/20 text-primary{% else %}hover:bg-gray-100 dark:hover:bg-white/10{% endif %}"
+          >
+            <span
+              class="material-symbols-outlined text-lg {% if path|slice:':7' == '/orders' %}!text-primary{% endif %}"
+              >receipt_long</span
+            >
+            <p class="text-sm font-medium leading-normal">Orders</p>
+          </a>
+          <a
+            href="{% url 'reports:index' %}"
+            class="flex items-center gap-3 rounded-lg px-3 py-2 {% if path|slice:':8' == '/reports' %}bg-primary/10 dark:bg-primary/20 text-primary{% else %}hover:bg-gray-100 dark:hover:bg-white/10{% endif %}"
+          >
+            <span
+              class="material-symbols-outlined text-lg {% if path|slice:':8' == '/reports' %}!text-primary{% endif %}"
+              >assessment</span
+            >
+            <p class="text-sm font-medium leading-normal">Reports</p>
+          </a>
+          <a
+            href="{% url 'users:list' %}"
+            class="flex items-center gap-3 rounded-lg px-3 py-2 {% if path|slice:':6' == '/users' %}bg-primary/10 dark:bg-primary/20 text-primary{% else %}hover:bg-gray-100 dark:hover:bg-white/10{% endif %}"
+          >
+            <span
+              class="material-symbols-outlined text-lg {% if path|slice:':6' == '/users' %}!text-primary{% endif %}"
+              >group</span
+            >
+            <p class="text-sm font-medium leading-normal">Users &amp; Roles</p>
+          </a>
+          {% endwith %}
+        </nav>
+        <div class="flex flex-col gap-1">
+          <a
+            href="{% url 'shipments:create' %}"
+            class="flex h-10 w-full items-center justify-center overflow-hidden rounded-lg bg-primary px-4 text-sm font-bold leading-normal tracking-[0.015em] text-white hover:bg-primary/90"
+          >
+            <span class="truncate">Create New Shipment</span>
+          </a>
+          <a
+            class="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-gray-100 dark:hover:bg-white/10"
+            href="#"
+          >
+            <span class="material-symbols-outlined text-lg">settings</span>
+            <p class="text-sm font-medium leading-normal">Settings</p>
+          </a>
+          <a
+            class="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-gray-100 dark:hover:bg-white/10"
+            href="#"
+          >
+            <span class="material-symbols-outlined text-lg">help_outline</span>
+            <p class="text-sm font-medium leading-normal">Help</p>
+          </a>
+        </div>
+      </aside>
+
+      <!-- Main area -->
+      <main class="flex flex-1 flex-col overflow-hidden">
+        <header
+          class="sticky top-0 z-10 flex items-center justify-between border-b border-border-light bg-card-light px-8 py-3 backdrop-blur-sm dark:border-border-dark dark:bg-card-dark/80"
+        >
+          <div class="flex items-center gap-8">
+            {% block topbar_left %}
+            <label class="flex h-10 min-w-40 w-80 flex-col">
+              <div class="flex h-full w-full items-stretch rounded-lg">
+                <div
+                  class="flex items-center justify-center rounded-l-lg border border-border-light bg-background-light pl-3 text-gray-500 dark:border-border-dark dark:bg-background-dark dark:text-gray-400"
+                >
+                  <span class="material-symbols-outlined text-lg">search</span>
+                </div>
+                <input
+                  class="form-input h-full w-full min-w-0 flex-1 rounded-r-lg border border-l-0 border-border-light bg-background-light px-3 text-sm text-text-light placeholder:text-gray-500 focus:outline-0 focus:ring-2 focus:ring-primary/50 dark:border-border-dark dark:bg-background-dark dark:text-text-dark dark:placeholder:text-gray-400"
+                  placeholder="Search shipments, orders, etc."
+                />
+              </div>
+            </label>
+            {% endblock %}
+          </div>
+          <div class="flex flex-1 items-center justify-end gap-4">
+            {% block topbar_right %}
+            <button
+              class="flex size-10 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
+            >
+              <span class="material-symbols-outlined text-xl"
+                >notifications</span
+              >
+            </button>
+            <div
+              class="size-10 rounded-full bg-cover bg-center bg-no-repeat"
+              style="
+                background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCKera53H3U4mXhpnEbk9Ou_r8mu6f43MuSDDiVh5rsnFEKEBS0wEc5h9ArezFikwhpJQzm3MsYrT2swRDmBaHN6ggtjGg9_BF0_lXanZq1_9DEjn2tJevNKGAfLc-5IwGNVbiJRd-36xkfdQNaG_ndlRheSnE8yeuk8wDCcsRanRXvPPYliROdxyeRfscpn9Twx76oE11HL0VTYQ6vG0UPLxA7xCEFoOnHkt02PPk8hodHIRJJvjTGqIQDWdA3cjmRLnbrXDT5dw');
+              "
+            ></div>
+            {% endblock %}
+          </div>
+        </header>
+        {% if messages %}
+        <div
+          id="toast-root"
+          class="pointer-events-none fixed right-4 top-4 z-50 space-y-3"
+        >
+          {% for message in messages %}
+          <div
+            class="pointer-events-auto flex max-w-sm items-start gap-3 rounded-xl border border-border-light bg-card-light px-4 py-3 text-sm shadow-lg dark:border-border-dark dark:bg-card-dark"
+            data-toast
+          >
+            <span
+              class="material-symbols-outlined text-lg {% if message.tags == 'error' %}text-danger{% elif message.tags == 'success' %}text-success{% else %}text-primary{% endif %}"
+            >
+              {% if message.tags == 'error' %}error{% elif message.tags ==
+              'success' %}task_alt{% else %}info{% endif %}
+            </span>
+            <div class="flex-1 text-text-light dark:text-text-dark">
+              {{ message }}
+            </div>
+            <button
+              type="button"
+              class="pointer-events-auto text-gray-500 hover:text-primary dark:text-gray-400"
+              data-toast-dismiss
+            >
+              <span class="material-symbols-outlined text-base">close</span>
+            </button>
+          </div>
+          {% endfor %}
+        </div>
+        <script>
+          (function () {
+            const toasts = document.querySelectorAll("[data-toast]");
+            toasts.forEach((toast) => {
+              const closeBtn = toast.querySelector("[data-toast-dismiss]");
+              const hide = () =>
+                toast.classList.add("opacity-0", "translate-y-2");
+              setTimeout(hide, 4200);
+              closeBtn?.addEventListener("click", hide);
+              toast.addEventListener("transitionend", () => {
+                if (toast.classList.contains("opacity-0")) toast.remove();
+              });
+            });
+          })();
+        </script>
+        {% endif %}
+        <div class="flex-1 overflow-y-auto">
+          {% block content %}{% endblock %}
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

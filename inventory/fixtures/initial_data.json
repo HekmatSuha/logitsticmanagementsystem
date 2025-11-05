@@ -1,0 +1,134 @@
+[
+  {
+    "model": "inventory.warehouse",
+    "pk": 1,
+    "fields": {
+      "name": "Main Warehouse",
+      "location": "New York, NY"
+    }
+  },
+  {
+    "model": "inventory.warehouse",
+    "pk": 2,
+    "fields": {
+      "name": "West Coast Warehouse",
+      "location": "Los Angeles, CA"
+    }
+  },
+  {
+    "model": "inventory.warehouse",
+    "pk": 3,
+    "fields": {
+      "name": "Central Warehouse",
+      "location": "Chicago, IL"
+    }
+  },
+  {
+    "model": "inventory.product",
+    "pk": 1,
+    "fields": {
+      "name": "Laptop",
+      "sku": "LAP001",
+      "reorder_point": 5
+    }
+  },
+  {
+    "model": "inventory.product",
+    "pk": 2,
+    "fields": {
+      "name": "Mouse",
+      "sku": "MOU001",
+      "reorder_point": 10
+    }
+  },
+  {
+    "model": "inventory.product",
+    "pk": 3,
+    "fields": {
+      "name": "Keyboard",
+      "sku": "KEY001",
+      "reorder_point": 8
+    }
+  },
+  {
+    "model": "inventory.product",
+    "pk": 4,
+    "fields": {
+      "name": "Monitor",
+      "sku": "MON001",
+      "reorder_point": 3
+    }
+  },
+  {
+    "model": "inventory.product",
+    "pk": 5,
+    "fields": {
+      "name": "Printer",
+      "sku": "PRI001",
+      "reorder_point": 2
+    }
+  },
+  {
+    "model": "inventory.stockitem",
+    "pk": 1,
+    "fields": {
+      "product": 1,
+      "warehouse": 1,
+      "quantity": 20
+    }
+  },
+  {
+    "model": "inventory.stockitem",
+    "pk": 2,
+    "fields": {
+      "product": 1,
+      "warehouse": 2,
+      "quantity": 15
+    }
+  },
+  {
+    "model": "inventory.stockitem",
+    "pk": 3,
+    "fields": {
+      "product": 2,
+      "warehouse": 1,
+      "quantity": 50
+    }
+  },
+  {
+    "model": "inventory.stockitem",
+    "pk": 4,
+    "fields": {
+      "product": 2,
+      "warehouse": 3,
+      "quantity": 30
+    }
+  },
+  {
+    "model": "inventory.stockitem",
+    "pk": 5,
+    "fields": {
+      "product": 3,
+      "warehouse": 1,
+      "quantity": 25
+    }
+  },
+  {
+    "model": "inventory.stockitem",
+    "pk": 6,
+    "fields": {
+      "product": 4,
+      "warehouse": 2,
+      "quantity": 10
+    }
+  },
+  {
+    "model": "inventory.stockitem",
+    "pk": 7,
+    "fields": {
+      "product": 5,
+      "warehouse": 3,
+      "quantity": 5
+    }
+  }
+]

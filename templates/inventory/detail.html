@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Inventory Item - {{ object.product.name }}{% endblock %}
+{% block content %}
+<div class="flex h-full flex-col gap-6 p-6 lg:p-8">
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <div class="flex flex-col gap-1">
+      <h1 class="text-3xl font-bold tracking-tight text-text-light dark:text-text-dark">{{ object.product.name }}</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400">SKU: {{ object.product.sku }}</p>
+    </div>
+    <a href="{% url 'inventory:list' %}" class="inline-flex h-10 items-center justify-center rounded-lg border border-border-light px-4 text-sm font-semibold text-text-light hover:bg-gray-100 dark:border-border-dark dark:text-text-dark dark:hover:bg-white/10">
+      <span class="material-symbols-outlined mr-2 text-base">arrow_back</span>
+      Back to Inventory
+    </a>
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-3">
+    <div class="rounded-xl border border-border-light bg-card-light p-6 shadow-sm dark:border-border-dark dark:bg-card-dark lg:col-span-2">
+      <h2 class="mb-4 text-lg font-bold text-text-light dark:text-text-dark">Item Summary</h2>
+      <dl class="grid gap-4 sm:grid-cols-2 text-sm">
+        <div>
+          <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Warehouse</dt>
+          <dd class="text-text-light dark:text-text-dark">{{ object.warehouse.name }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Quantity on Hand</dt>
+          <dd class="text-text-light dark:text-text-dark">{{ object.quantity }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Reorder Point</dt>
+          <dd class="text-text-light dark:text-text-dark">{{ object.product.reorder_point }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Status</dt>
+          <dd>
+            {% if object.quantity <= 0 %}
+              <span class="inline-flex items-center gap-1.5 rounded-full bg-danger/10 px-2.5 py-0.5 text-xs font-medium text-danger">Out of Stock</span>
+            {% elif object.quantity <= object.product.reorder_point %}
+              <span class="inline-flex items-center gap-1.5 rounded-full bg-warning/10 px-2.5 py-0.5 text-xs font-medium text-warning">Low Stock</span>
+            {% else %}
+              <span class="inline-flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-medium text-success">In Stock</span>
+            {% endif %}
+          </dd>
+        </div>
+      </dl>
+    </div>
+    <div class="rounded-xl border border-border-light bg-card-light p-6 shadow-sm dark:border-border-dark dark:bg-card-dark">
+      <h3 class="text-lg font-bold text-text-light dark:text-text-dark">Actions</h3>
+      <div class="mt-4 space-y-3">
+        <button class="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90">
+          <span class="material-symbols-outlined text-base">edit</span>
+          Update Item
+        </button>
+        <button class="flex w-full items-center justify-center gap-2 rounded-lg border border-border-light px-4 py-2 text-sm font-semibold text-text-light hover:bg-gray-100 dark:border-border-dark dark:text-text-dark dark:hover:bg-white/10">
+          <span class="material-symbols-outlined text-base">history</span>
+          View Stock History
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

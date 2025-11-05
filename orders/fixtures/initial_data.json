@@ -1,0 +1,82 @@
+[
+  {
+    "model": "orders.order",
+    "pk": 1,
+    "fields": {
+      "customer_name": "John Doe",
+      "order_date": "2023-12-01",
+      "total_amount": "150.00",
+      "status": "pending"
+    }
+  },
+  {
+    "model": "orders.order",
+    "pk": 2,
+    "fields": {
+      "customer_name": "Jane Smith",
+      "order_date": "2023-12-02",
+      "total_amount": "250.50",
+      "status": "processing"
+    }
+  },
+  {
+    "model": "orders.order",
+    "pk": 3,
+    "fields": {
+      "customer_name": "Bob Johnson",
+      "order_date": "2023-12-03",
+      "total_amount": "75.25",
+      "status": "delivered"
+    }
+  },
+  {
+    "model": "orders.order",
+    "pk": 4,
+    "fields": {
+      "customer_name": "Alice Brown",
+      "order_date": "2023-12-04",
+      "total_amount": "320.00",
+      "status": "cancelled"
+    }
+  },
+  {
+    "model": "orders.order",
+    "pk": 5,
+    "fields": {
+      "customer_name": "Charlie Wilson",
+      "order_date": "2023-12-05",
+      "total_amount": "180.75",
+      "status": "pending"
+    }
+  },
+  {
+    "model": "orders.order",
+    "pk": 6,
+    "fields": {
+      "customer_name": "Diana Lee",
+      "order_date": "2023-12-06",
+      "total_amount": "95.00",
+      "status": "processing"
+    }
+  },
+  {
+    "model": "orders.order",
+    "pk": 7,
+    "fields": {
+      "customer_name": "Edward Davis",
+      "order_date": "2023-12-07",
+      "total_amount": "400.00",
+      "status": "delivered"
+    }
+  },
+  {
+    "model": "orders.order",
+    "pk": 8,
+    "fields": {
+      "customer_name": "Fiona Garcia",
+      "order_date": "2023-12-08",
+      "total_amount": "60.50",
+      "status": "cancelled"
+    }
+  }
+]

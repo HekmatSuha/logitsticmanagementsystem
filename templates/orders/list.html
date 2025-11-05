@@ -1,0 +1,336 @@
+{% extends "base.html" %} {% load ui_extras %} {% block title %}Customer Orders
+- Logistics Pro{% endblock %} {% block content %}
+<div class="flex min-h-full">
+  <div class="flex flex-1 flex-col gap-4 p-6 lg:p-8">
+    <nav class="text-xs font-medium text-gray-500 dark:text-gray-400">
+      <a href="{% url 'dashboard' %}" class="hover:text-primary">Dashboard</a>
+      <span class="mx-1 text-gray-400">/</span>
+      <span class="text-text-light dark:text-text-dark">Orders</span>
+    </nav>
+    <div class="flex flex-wrap justify-between gap-4">
+      <div class="flex min-w-72 flex-col gap-2">
+        <h1
+          class="text-3xl font-bold leading-tight tracking-tight text-text-light dark:text-text-dark"
+        >
+          Customer Orders
+        </h1>
+        <p
+          class="text-base font-normal leading-normal text-gray-500 dark:text-gray-400"
+        >
+          Manage, track, and fulfill customer orders efficiently.
+        </p>
+      </div>
+      <a
+        href="{% url 'orders:create' %}"
+        class="flex h-10 min-w-0 shrink-0 items-center justify-center gap-2 overflow-hidden rounded-lg bg-primary px-4 text-sm font-bold leading-normal tracking-[0.015em] text-white shadow-sm hover:bg-primary/90"
+      >
+        <span class="material-symbols-outlined text-[20px]">add</span>
+        <span class="truncate">Create New Order</span>
+      </a>
+    </div>
+
+    <form method="get" class="flex items-center justify-between gap-4">
+      <div class="relative w-full max-w-sm">
+        <span
+          class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-slate-500"
+          >search</span
+        >
+        <input
+          type="search"
+          name="q"
+          value="{{ search_query }}"
+          placeholder="Search by Order ID, Customer..."
+          class="h-10 w-full rounded-lg border border-slate-300 bg-white pl-10 pr-4 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+        />
+        {% if status_filter and status_filter != "all" %}
+        <input type="hidden" name="status" value="{{ status_filter }}" />
+        {% endif %}
+      </div>
+      {% if selected %}
+      <input type="hidden" name="id" value="{{ selected.id }}" />
+      {% endif %}
+      <button class="hidden"></button>
+    </form>
+
+    <div
+      class="flex gap-2 overflow-x-auto rounded-lg bg-gray-100 p-2 dark:bg-slate-800/70"
+    >
+      {% for value,label in status_options %}
+      <a
+        href="{% url_with status=value id=None %}"
+        class="flex h-8 shrink-0 items-center justify-center gap-2 rounded-lg px-3 text-sm font-medium leading-normal {% if value == status_filter %}bg-primary text-white{% else %}bg-white text-gray-700 hover:bg-gray-200 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-700{% endif %}"
+      >
+        {{ label|title }} {% if value == status_filter %}<span
+          class="material-symbols-outlined text-[18px]"
+          >check</span
+        >{% endif %}
+      </a>
+      {% endfor %}
+    </div>
+    {% if quick_filters %}
+    <div
+      class="flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400"
+    >
+      <span class="font-semibold uppercase tracking-wide">Quick filters:</span>
+      {% for filter in quick_filters %}
+      <a
+        href="?{{ filter.query }}"
+        class="inline-flex items-center rounded-full border border-slate-300 px-3 py-1 font-medium text-gray-600 transition hover:border-primary hover:text-primary dark:border-slate-700 dark:text-slate-300 dark:hover:border-primary dark:hover:text-primary"
+      >
+        {{ filter.label }}
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="flex-1 overflow-x-auto">
+      <div class="inline-block min-w-full align-middle">
+        <div
+          class="overflow-hidden rounded-lg border border-[#cfdbe7] bg-white dark:border-slate-800 dark:bg-slate-900/50"
+        >
+          <table
+            class="min-w-full divide-y divide-[#cfdbe7] dark:divide-slate-800"
+          >
+            <thead class="bg-slate-100 dark:bg-slate-800/50">
+              <tr>
+                <th
+                  scope="col"
+                  class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[#4c739a] dark:text-slate-400"
+                >
+                  Order ID
+                </th>
+                <th
+                  scope="col"
+                  class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[#4c739a] dark:text-slate-400"
+                >
+                  Customer
+                </th>
+                <th
+                  scope="col"
+                  class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[#4c739a] dark:text-slate-400"
+                >
+                  Order Date
+                </th>
+                <th
+                  scope="col"
+                  class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[#4c739a] dark:text-slate-400"
+                >
+                  Total
+                </th>
+                <th
+                  scope="col"
+                  class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[#4c739a] dark:text-slate-400"
+                >
+                  Status
+                </th>
+                <th
+                  scope="col"
+                  class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[#4c739a] dark:text-slate-400"
+                >
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#cfdbe7] dark:divide-slate-800">
+              {% for order in orders %}
+              <tr
+                class="{% if selected and selected.id == order.id %}bg-primary/5 dark:bg-primary/10{% else %}hover:bg-slate-50 dark:hover:bg-slate-800/50{% endif %}"
+              >
+                <td
+                  class="whitespace-nowrap px-4 py-4 text-sm font-medium text-[#0d141b] dark:text-slate-300"
+                >
+                  #{{ order.id }}
+                </td>
+                <td
+                  class="whitespace-nowrap px-4 py-4 text-sm text-[#0d141b] dark:text-slate-300"
+                >
+                  {{ order.customer_name }}
+                </td>
+                <td
+                  class="whitespace-nowrap px-4 py-4 text-sm text-[#4c739a] dark:text-slate-400"
+                >
+                  {{ order.order_date|date:"Y-m-d" }}
+                </td>
+                <td
+                  class="whitespace-nowrap px-4 py-4 text-sm text-[#4c739a] dark:text-slate-400"
+                >
+                  ${{ order.total_amount }}
+                </td>
+                <td class="whitespace-nowrap px-4 py-4 text-sm">
+                  <span
+                    class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {% if order.status == 'delivered' %}bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 {% elif order.status == 'pending' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300 {% elif order.status == 'processing' %}bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 {% else %}bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300{% endif %}"
+                  >
+                    {{ order.status|title }}
+                  </span>
+                </td>
+                <td class="whitespace-nowrap px-4 py-4 text-sm font-medium">
+                  <a
+                    href="{% url_with id=order.id %}"
+                    class="text-primary hover:text-primary/80"
+                    >View Details</a
+                  >
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td
+                  colspan="6"
+                  class="px-4 py-6 text-center text-slate-500 dark:text-slate-400"
+                >
+                  No orders match the current filters.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        {% if is_paginated %}
+        <div
+          class="mt-4 flex items-center justify-between text-sm text-slate-500 dark:text-slate-400"
+        >
+          <p>
+            Showing
+            <span class="font-medium">{{ page_obj.start_index }}</span> to
+            <span class="font-medium">{{ page_obj.end_index }}</span> of
+            <span class="font-medium">{{ paginator.count }}</span> results
+          </p>
+          <div class="flex items-center gap-2">
+            {% if page_obj.has_previous %}
+            <a
+              href="{% url_with page=page_obj.previous_page_number %}"
+              class="flex size-8 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-500 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
+            >
+              <span class="material-symbols-outlined text-lg"
+                >chevron_left</span
+              >
+            </a>
+            {% else %}
+            <span
+              class="flex size-8 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-600"
+            >
+              <span class="material-symbols-outlined text-lg"
+                >chevron_left</span
+              >
+            </span>
+            {% endif %} {% if page_obj.has_next %}
+            <a
+              href="{% url_with page=page_obj.next_page_number %}"
+              class="flex size-8 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-500 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
+            >
+              <span class="material-symbols-outlined text-lg"
+                >chevron_right</span
+              >
+            </a>
+            {% else %}
+            <span
+              class="flex size-8 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-600"
+            >
+              <span class="material-symbols-outlined text-lg"
+                >chevron_right</span
+              >
+            </span>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <aside
+    class="hidden w-full max-w-sm flex-col border-l border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-background-dark lg:flex"
+  >
+    {% if selected %}
+    <div class="flex items-center justify-between">
+      <h3 class="text-lg font-semibold text-[#0d141b] dark:text-white">
+        Order Details
+      </h3>
+      <button
+        type="button"
+        class="rounded-full p-1 hover:bg-slate-100 dark:hover:bg-slate-800"
+      >
+        <span
+          class="material-symbols-outlined text-slate-500 dark:text-slate-400"
+          >close</span
+        >
+      </button>
+    </div>
+    <div
+      class="mt-4 border-t border-slate-200 pt-4 text-sm dark:border-slate-800"
+    >
+      <div class="flex items-center justify-between">
+        <p class="text-lg font-bold text-[#0d141b] dark:text-white">
+          #{{ selected.id }}
+        </p>
+        <span
+          class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium {% if selected.status == 'delivered' %}bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 {% elif selected.status == 'pending' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300 {% elif selected.status == 'processing' %}bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 {% else %}bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300{% endif %}"
+        >
+          {{ selected.status|title }}
+        </span>
+      </div>
+      <p class="mt-1 text-slate-500 dark:text-slate-400">
+        {{ selected.customer_name }}
+      </p>
+      <p class="mt-1 text-slate-500 dark:text-slate-400">
+        Placed on {{ selected.order_date|date:"M j, Y" }}
+      </p>
+      <p class="mt-2 font-semibold text-text-light dark:text-text-dark">
+        Total: ${{ selected.total_amount }}
+      </p>
+    </div>
+    <div class="mt-6 space-y-4">
+      <div>
+        <h4 class="font-medium text-[#0d141b] dark:text-white">
+          Shipping Address
+        </h4>
+        <p class="text-slate-500 dark:text-slate-400">Not provided</p>
+      </div>
+      <div>
+        <h4 class="font-medium text-[#0d141b] dark:text-white">
+          Billing Address
+        </h4>
+        <p class="text-slate-500 dark:text-slate-400">Not provided</p>
+      </div>
+      <div>
+        <h4 class="font-medium text-[#0d141b] dark:text-white">
+          Order History
+        </h4>
+        <ol class="mt-2 space-y-2 text-xs text-slate-500 dark:text-slate-400">
+          {% for event in selected_history %}
+          <li>
+            {{ event.timestamp|date:"M j, Y" }} - {{ event.label }}{% if event.description %}: {{ event.description }}{% endif %}
+          </li>
+          {% empty %}
+          <li>No history available.</li>
+          {% endfor %}
+        </ol>
+      </div>
+    </div>
+    <div class="mt-6 flex gap-2">
+      <button
+        type="button"
+        class="flex-1 items-center justify-center gap-2 rounded-lg bg-slate-100 px-4 py-2 text-sm font-bold text-[#0d141b] hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+      >
+        <span class="material-symbols-outlined text-[20px]">edit</span>
+        Edit Order
+      </button>
+      <a
+        href="{% url 'orders:invoice' selected.id %}"
+        target="_blank"
+        class="flex-1 items-center justify-center gap-2 rounded-lg bg-slate-100 px-4 py-2 text-sm font-bold text-[#0d141b] hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+      >
+        <span class="material-symbols-outlined text-[20px]">print</span>
+        Print Invoice
+      </a>
+    </div>
+    {% else %}
+    <div
+      class="flex h-full items-center justify-center text-sm text-slate-500 dark:text-slate-400"
+    >
+      Select an order to view its details.
+    </div>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

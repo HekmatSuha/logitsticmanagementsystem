@@ -1,0 +1,244 @@
+{% extends "base.html" %} {% block title %}Inventory Management{% endblock %} {%
+block content %}
+<form method="post" action="{% url 'inventory:bulk_action' %}">
+  {% csrf_token %}
+  <div class="flex h-full flex-col gap-6 p-6 lg:p-8">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div class="flex flex-col gap-1">
+        <h1
+          class="text-3xl font-bold tracking-tight text-text-light dark:text-text-dark"
+        >
+          Inventory Management
+        </h1>
+        <p class="text-base font-normal text-gray-500 dark:text-gray-400">
+          Track product stock levels, warehouse locations, and reorder points.
+        </p>
+      </div>
+      <div class="flex items-center gap-2">
+        <a
+          href="{% url 'inventory:create' %}"
+          class="flex h-10 items-center justify-center gap-2 overflow-hidden rounded-lg bg-primary px-4 text-sm font-bold leading-normal text-white shadow-sm hover:bg-primary/90"
+        >
+          <span class="material-symbols-outlined text-base">add</span>
+          <span class="truncate">Add New Item</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {% for stat in stats %} {% cycle 'from-purple-500 to-violet-600'
+      'from-sky-500 to-cyan-600' 'from-emerald-500 to-lime-600' as card_color
+      silent %}
+      <div
+        class="flex flex-col gap-2 rounded-xl bg-gradient-to-br {{ card_color }} p-6 text-white shadow-lg transition hover:shadow-xl dark:text-white"
+      >
+        <p class="text-sm font-medium text-white/80">{{ stat.label }}</p>
+        <div class="flex items-baseline gap-2">
+          <p class="text-3xl font-bold tracking-tight">{{ stat.value }}</p>
+          <p class="text-sm font-medium text-white/90">{{ stat.change }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div
+      class="w-full overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
+    >
+      <div
+        class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 p-4 dark:border-slate-800"
+      >
+        <form method="get" class="w-full max-w-sm">
+          <label class="flex h-10 w-full flex-col">
+            <div class="flex h-full w-full items-stretch rounded-lg">
+              <div
+                class="flex items-center justify-center rounded-l-lg border border-r-0 border-slate-300 bg-slate-100 pl-3 text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
+              >
+                <span class="material-symbols-outlined text-xl">search</span>
+              </div>
+              <input
+                type="search"
+                name="q"
+                value="{{ search_query }}"
+                placeholder="Search by Product Name or SKU..."
+                class="form-input h-full w-full min-w-0 flex-1 rounded-r-lg border border-l-0 border-slate-300 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-500 focus:border-primary focus:outline-0 focus:ring-2 focus:ring-primary/50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+              />
+            </div>
+          </label>
+        </form>
+        <div class="flex items-center gap-2">
+          <select
+            name="action"
+            class="form-select h-10 rounded-lg border-slate-300 bg-white text-sm text-slate-900 focus:border-primary focus:outline-0 focus:ring-2 focus:ring-primary/50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+          >
+            <option value="">Bulk Actions</option>
+            <option value="delete">Delete Selected</option>
+          </select>
+          <button
+            type="submit"
+            class="flex h-10 items-center justify-center gap-2 overflow-hidden rounded-lg bg-primary px-4 text-sm font-bold leading-normal text-white shadow-sm hover:bg-primary/90"
+          >
+            <span>Apply</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm" id="inventory-table">
+          <thead
+            class="border-b border-slate-200 text-xs uppercase text-slate-500 dark:border-slate-800 dark:text-slate-400"
+          >
+            <tr>
+              <th scope="col" class="px-6 py-3">
+                <input
+                  type="checkbox"
+                  id="select-all"
+                  class="form-checkbox rounded border-slate-400 text-primary focus:ring-primary/50"
+                />
+              </th>
+              <th scope="col" class="px-6 py-3">Product</th>
+              <th scope="col" class="px-6 py-3">Warehouse</th>
+              <th scope="col" class="px-6 py-3 text-center">Stock</th>
+              <th scope="col" class="px-6 py-3 text-center">Reorder Point</th>
+              <th scope="col" class="px-6 py-3">Status</th>
+              <th scope="col" class="px-6 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in items %} {% with qty=item.quantity
+            reorder=item.product.reorder_point %}
+            <tr
+              class="border-b border-slate-200 text-slate-800 dark:border-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+            >
+              <td class="px-6 py-4">
+                <input
+                  type="checkbox"
+                  name="selected_items"
+                  value="{{ item.id }}"
+                  class="form-checkbox rounded border-slate-400 text-primary focus:ring-primary/50"
+                />
+              </td>
+              <td class="px-6 py-4 font-medium">
+                {{ item.product.name }}
+                <div class="text-xs text-slate-500 dark:text-slate-400">
+                  SKU: {{ item.product.sku }}
+                </div>
+              </td>
+              <td class="px-6 py-4">{{ item.warehouse.name }}</td>
+              <td class="px-6 py-4 text-center font-semibold">{{ qty }}</td>
+              <td class="px-6 py-4 text-center">{{ reorder }}</td>
+              <td class="px-6 py-4">
+                {% if qty <= 0 %}
+                <span
+                  class="inline-flex items-center gap-1.5 rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700 dark:bg-red-900/50 dark:text-red-400"
+                >
+                  <span class="size-1.5 rounded-full bg-red-500"></span>
+                  Out of Stock
+                </span>
+                {% elif qty <= reorder %}
+                <span
+                  class="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700 dark:bg-amber-900/50 dark:text-amber-400"
+                >
+                  <span class="size-1.5 rounded-full bg-amber-500"></span>
+                  Low Stock
+                </span>
+                {% else %}
+                <span
+                  class="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700 dark:bg-green-900/50 dark:text-green-400"
+                >
+                  <span class="size-1.5 rounded-full bg-green-500"></span>
+                  In Stock
+                </span>
+                {% endif %}
+              </td>
+              <td class="px-6 py-4 text-right">
+                <div class="flex justify-end gap-2">
+                  <a
+                    href="{% url 'inventory:detail' item.id %}"
+                    class="p-1.5 text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary"
+                  >
+                    <span class="material-symbols-outlined text-xl"
+                      >read_more</span
+                    >
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% endwith %}
+            {% empty %}
+            <tr>
+              <td
+                colspan="7"
+                class="px-6 py-6 text-center text-slate-500 dark:text-slate-400"
+              >
+                No items found.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div
+        class="flex items-center justify-between p-4 text-sm text-slate-600 dark:text-slate-400"
+      >
+        {% if is_paginated %}
+        <span
+          >Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{
+          paginator.count }} results</span
+        >
+        <div class="inline-flex items-center gap-2">
+          {% if page_obj.has_previous %}
+          <a
+            href="?{% if search_query %}q={{ search_query }}&amp;{% endif %}page={{ page_obj.previous_page_number }}"
+            class="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-slate-800"
+          >
+            <span class="material-symbols-outlined text-base"
+              >chevron_left</span
+            >
+          </a>
+          {% else %}
+          <span class="rounded-lg p-2 opacity-50">
+            <span class="material-symbols-outlined text-base"
+              >chevron_left</span
+            >
+          </span>
+          {% endif %} {% if page_obj.has_next %}
+          <a
+            href="?{% if search_query %}q={{ search_query }}&amp;{% endif %}page={{ page_obj.next_page_number }}"
+            class="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-slate-800"
+          >
+            <span class="material-symbols-outlined text-base"
+              >chevron_right</span
+            >
+          </a>
+          {% else %}
+          <span class="rounded-lg p-2 opacity-50">
+            <span class="material-symbols-outlined text-base"
+              >chevron_right</span
+            >
+          </span>
+          {% endif %}
+        </div>
+        {% else %}
+        <span
+          >Showing {{ items|length }} result{% if items|length != 1 %}s{% endif
+          %}</span
+        >
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}
+<script>
+  document
+    .getElementById("select-all")
+    .addEventListener("change", function (e) {
+      const checkboxes = document.querySelectorAll(
+        '#inventory-table tbody input[type="checkbox"]'
+      );
+      checkboxes.forEach((checkbox) => {
+        checkbox.checked = e.target.checked;
+      });
+    });
+</script>

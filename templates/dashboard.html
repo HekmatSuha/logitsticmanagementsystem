@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+{% block title %}Logistics Pro - Dashboard{% endblock %}
+{% block content %}
+<div class="flex flex-col gap-6 p-6 lg:p-10">
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <div class="flex min-w-72 flex-col gap-2">
+      <nav class="text-xs font-medium text-gray-500 dark:text-gray-400">
+        <span class="text-text-light dark:text-text-dark">Dashboard</span>
+      </nav>
+      <h1 class="text-3xl font-bold leading-tight tracking-[-0.03em] text-text-light dark:text-text-dark">
+        Logistics Overview
+      </h1>
+      <p class="text-base font-normal leading-normal text-gray-500 dark:text-gray-400">
+        Live insights across shipments, orders, and inventory.
+      </p>
+    </div>
+    <div class="flex items-center gap-2">
+      {% for timeframe in timeframes %}
+      <a
+        href="{{ timeframe.url }}"
+        class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg border px-3 text-sm font-medium leading-normal transition {% if timeframe.value == active_timeframe %}border-primary bg-primary/10 text-primary{% else %}border-border-light bg-card-light text-gray-600 hover:border-primary hover:text-primary dark:border-border-dark dark:bg-card-dark dark:text-gray-300{% endif %}"
+      >
+        {{ timeframe.label }}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+    {% for stat in stats %}
+    {% cycle 'from-blue-500 to-indigo-600' 'from-green-500 to-teal-600' 'from-yellow-500 to-orange-600' 'from-pink-500 to-rose-600' as card_color silent %}
+    <div class="flex flex-1 flex-col gap-2 rounded-xl bg-gradient-to-br {{ card_color }} p-6 text-white shadow-lg transition hover:shadow-xl dark:text-white">
+      <p class="text-sm font-medium leading-normal text-white/80">{{ stat.label }}</p>
+      <p class="text-3xl font-bold leading-tight">{{ stat.value }}</p>
+      {% with tone=stat.tone %}
+      <p class="flex items-center gap-1 text-sm font-semibold leading-normal text-white/90">
+        <span class="material-symbols-outlined text-base">
+          {% if tone == 'success' %}
+            arrow_upward
+          {% elif tone == 'danger' %}
+            arrow_downward
+          {% else %}
+            horizontal_rule
+          {% endif %}
+        </span>
+        {{ stat.delta }}
+      </p>
+      {% endwith %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+    <section class="flex flex-col gap-4 rounded-xl border border-border-light bg-card-light p-6 dark:border-border-dark dark:bg-card-dark lg:col-span-2">
+      <header class="flex items-center justify-between">
+        <h3 class="text-lg font-bold text-text-light dark:text-text-dark">Shipment Volume</h3>
+        <span class="text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">Grouped by last update</span>
+      </header>
+      {% if shipment_volume %}
+      <div>
+        <canvas id="shipmentVolumeChart"></canvas>
+      </div>
+      <script>
+        new Chart(document.getElementById('shipmentVolumeChart'), {
+          type: 'bar',
+          data: {
+            labels: {{ shipment_volume_labels|safe }},
+            datasets: [{
+              label: 'Shipments',
+              data: {{ shipment_volume_data|safe }},
+              backgroundColor: 'rgba(17, 115, 212, 0.5)',
+              borderColor: 'rgba(17, 115, 212, 1)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+      </script>
+      {% else %}
+      <div class="flex h-48 items-center justify-center rounded-lg border border-dashed border-border-light text-sm text-gray-500 dark:border-border-dark dark:text-gray-400">
+        Not enough activity yet to chart shipments.
+      </div>
+      {% endif %}
+    </section>
+    <section class="flex flex-col gap-4 rounded-xl border border-border-light bg-card-light p-6 dark:border-border-dark dark:bg-card-dark">
+      <h3 class="text-lg font-bold text-text-light dark:text-text-dark">Inventory Status</h3>
+      <div class="space-y-4">
+        {% for status in inventory_status %}
+        <div>
+          <div class="flex justify-between text-sm font-medium">
+            <span class="text-gray-600 dark:text-gray-300">{{ status.label }}</span>
+            <span class="text-text-light dark:text-text-dark">{{ status.count }}</span>
+          </div>
+          <div class="mt-1 h-2 rounded-full bg-slate-200 dark:bg-slate-800">
+            <span class="block h-full rounded-full {{ status.color }}" style="width: {{ status.percent }}%;"></span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-5">
+    <section class="flex flex-col gap-4 rounded-xl border border-border-light bg-card-light p-6 dark:border-border-dark dark:bg-card-dark lg:col-span-3">
+      <header class="flex items-center justify-between">
+        <h3 class="text-lg font-bold text-text-light dark:text-text-dark">Recent Alerts</h3>
+        <span class="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">Live operational notices</span>
+      </header>
+      <div class="space-y-3">
+        {% for alert in alerts %}
+        <div class="flex gap-3 rounded-lg border border-border-light px-3 py-3 dark:border-border-dark">
+          <span class="material-symbols-outlined text-xl {% if alert.level == 'danger' %}text-danger{% elif alert.level == 'warning' %}text-warning{% else %}text-primary{% endif %}">{{ alert.icon }}</span>
+          <div class="flex-1">
+            <p class="text-sm font-semibold text-text-light dark:text-text-dark">{{ alert.message }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ alert.detail }} • {{ alert.timestamp|timesince }} ago</p>
+          </div>
+        </div>
+        {% empty %}
+        <div class="flex h-24 items-center justify-center rounded-lg border border-dashed border-border-light text-sm text-gray-500 dark:border-border-dark dark:text-gray-400">
+          No alerts at the moment.
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    <section class="flex flex-col gap-4 rounded-xl border border-border-light bg-card-light p-6 dark:border-border-dark dark:bg-card-dark lg:col-span-2">
+      <h3 class="text-lg font-bold text-text-light dark:text-text-dark">Shipment Status Overview</h3>
+      <div class="space-y-3">
+        {% for status in status_overview %}
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-gray-600 dark:text-gray-300">{{ status.label }}</span>
+          <span class="font-semibold text-text-light dark:text-text-dark">{{ status.count }}</span>
+        </div>
+        {% empty %}
+        <p class="text-sm text-gray-500 dark:text-gray-400">No shipments recorded yet.</p>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+
+  <section class="rounded-xl border border-border-light bg-card-light p-6 dark:border-border-dark dark:bg-card-dark">
+    <header class="flex flex-wrap items-center justify-between gap-3">
+      <h3 class="text-lg font-bold text-text-light dark:text-text-dark">Recent Orders</h3>
+      <a href="{% url 'orders:list' %}" class="text-sm font-semibold text-primary hover:underline">View all orders</a>
+    </header>
+    <div class="mt-4 overflow-x-auto">
+      {% load ui_extras %}
+      <table class="min-w-full divide-y divide-border-light text-sm dark:divide-border-dark">
+        <thead class="bg-background-light text-xs uppercase text-gray-500 dark:bg-background-dark dark:text-gray-400">
+          <tr>
+            <th class="px-4 py-3 text-left">
+              <a href="{% url_with sort='pk' dir=sort_dir|toggle:'asc,desc' %}" class="flex items-center gap-1 hover:text-text-light dark:hover:text-text-dark">
+                Order
+                {% if sort_by == 'pk' %}
+                  <span class="material-symbols-outlined text-base">{% if sort_dir == 'asc' %}arrow_upward{% else %}arrow_downward{% endif %}</span>
+                {% endif %}
+              </a>
+            </th>
+            <th class="px-4 py-3 text-left">
+              <a href="{% url_with sort='customer_name' dir=sort_dir|toggle:'asc,desc' %}" class="flex items-center gap-1 hover:text-text-light dark:hover:text-text-dark">
+                Customer
+                {% if sort_by == 'customer_name' %}
+                  <span class="material-symbols-outlined text-base">{% if sort_dir == 'asc' %}arrow_upward{% else %}arrow_downward{% endif %}</span>
+                {% endif %}
+              </a>
+            </th>
+            <th class="px-4 py-3 text-left">
+              <a href="{% url_with sort='order_date' dir=sort_dir|toggle:'asc,desc' %}" class="flex items-center gap-1 hover:text-text-light dark:hover:text-text-dark">
+                Date
+                {% if sort_by == 'order_date' %}
+                  <span class="material-symbols-outlined text-base">{% if sort_dir == 'asc' %}arrow_upward{% else %}arrow_downward{% endif %}</span>
+                {% endif %}
+              </a>
+            </th>
+            <th class="px-4 py-3 text-left">
+              <a href="{% url_with sort='total_amount' dir=sort_dir|toggle:'asc,desc' %}" class="flex items-center gap-1 hover:text-text-light dark:hover:text-text-dark">
+                Total
+                {% if sort_by == 'total_amount' %}
+                  <span class="material-symbols-outlined text-base">{% if sort_dir == 'asc' %}arrow_upward{% else %}arrow_downward{% endif %}</span>
+                {% endif %}
+              </a>
+            </th>
+            <th class="px-4 py-3 text-left">
+              <a href="{% url_with sort='status' dir=sort_dir|toggle:'asc,desc' %}" class="flex items-center gap-1 hover:text-text-light dark:hover:text-text-dark">
+                Status
+                {% if sort_by == 'status' %}
+                  <span class="material-symbols-outlined text-base">{% if sort_dir == 'asc' %}arrow_upward{% else %}arrow_downward{% endif %}</span>
+                {% endif %}
+              </a>
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-border-light dark:divide-border-dark">
+          {% for order in recent_orders %}
+          <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+            <td class="px-4 py-3 font-medium text-text-light dark:text-text-dark">#{{ order.pk }}</td>
+            <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ order.customer_name }}</td>
+            <td class="px-4 py-3 text-gray-500 dark:text-gray-400">{{ order.order_date|date:"M j, Y" }}</td>
+            <td class="px-4 py-3 text-gray-500 dark:text-gray-400">${{ order.total_amount }}</td>
+            <td class="px-4 py-3">
+              <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+                {% if order.status == 'delivered' %}bg-success/10 text-success{% elif order.status == 'pending' %}bg-warning/10 text-warning{% elif order.status == 'processing' %}bg-primary/10 text-primary{% else %}bg-danger/10 text-danger{% endif %}">
+                {{ order.status|title }}
+              </span>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">No orders yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

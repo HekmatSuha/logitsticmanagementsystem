@@ -1,0 +1,142 @@
+[
+  {
+    "model": "shipments.shipment",
+    "pk": 1,
+    "fields": {
+      "tracking_id": "SHIP001",
+      "origin": "New York, NY",
+      "destination": "Los Angeles, CA",
+      "eta": "2023-12-15T10:00:00Z",
+      "status": "in_transit",
+      "priority": "high",
+      "carrier": "FedEx",
+      "contents": "Electronics",
+      "driver_contact": "driver1@example.com",
+      "departure_time": "2023-12-10T08:00:00Z",
+      "last_updated": "2023-12-12T14:00:00Z"
+    }
+  },
+  {
+    "model": "shipments.shipment",
+    "pk": 2,
+    "fields": {
+      "tracking_id": "SHIP002",
+      "origin": "Chicago, IL",
+      "destination": "Houston, TX",
+      "eta": "2023-12-20T15:00:00Z",
+      "status": "on_time",
+      "priority": "medium",
+      "carrier": "UPS",
+      "contents": "Furniture",
+      "driver_contact": "driver2@example.com",
+      "departure_time": "2023-12-12T09:00:00Z",
+      "last_updated": "2023-12-13T16:00:00Z"
+    }
+  },
+  {
+    "model": "shipments.shipment",
+    "pk": 3,
+    "fields": {
+      "tracking_id": "SHIP003",
+      "origin": "Seattle, WA",
+      "destination": "Miami, FL",
+      "eta": "2023-12-18T12:00:00Z",
+      "status": "delayed",
+      "priority": "low",
+      "carrier": "DHL",
+      "contents": "Clothing",
+      "driver_contact": "driver3@example.com",
+      "departure_time": "2023-12-11T10:00:00Z",
+      "last_updated": "2023-12-14T11:00:00Z"
+    }
+  },
+  {
+    "model": "shipments.shipment",
+    "pk": 4,
+    "fields": {
+      "tracking_id": "SHIP004",
+      "origin": "Boston, MA",
+      "destination": "Denver, CO",
+      "eta": "2023-12-22T14:00:00Z",
+      "status": "delivered",
+      "priority": "high",
+      "carrier": "USPS",
+      "contents": "Books",
+      "driver_contact": "driver4@example.com",
+      "departure_time": "2023-12-13T07:00:00Z",
+      "last_updated": "2023-12-15T13:00:00Z"
+    }
+  },
+  {
+    "model": "shipments.shipment",
+    "pk": 5,
+    "fields": {
+      "tracking_id": "SHIP005",
+      "origin": "San Francisco, CA",
+      "destination": "Phoenix, AZ",
+      "eta": "2023-12-25T16:00:00Z",
+      "status": "issue",
+      "priority": "medium",
+      "carrier": "FedEx",
+      "contents": "Appliances",
+      "driver_contact": "driver5@example.com",
+      "departure_time": "2023-12-14T11:00:00Z",
+      "last_updated": "2023-12-16T09:00:00Z"
+    }
+  },
+  {
+    "model": "shipments.shipmentevent",
+    "pk": 1,
+    "fields": {
+      "shipment": 1,
+      "timestamp": "2023-12-10T08:00:00Z",
+      "description": "Shipment departed from origin",
+      "location": "New York, NY",
+      "icon": "local_shipping"
+    }
+  },
+  {
+    "model": "shipments.shipmentevent",
+    "pk": 2,
+    "fields": {
+      "shipment": 1,
+      "timestamp": "2023-12-12T14:00:00Z",
+      "description": "In transit",
+      "location": "Chicago, IL",
+      "icon": "directions_car"
+    }
+  },
+  {
+    "model": "shipments.shipmentevent",
+    "pk": 3,
+    "fields": {
+      "shipment": 2,
+      "timestamp": "2023-12-12T09:00:00Z",
+      "description": "Shipment departed from origin",
+      "location": "Chicago, IL",
+      "icon": "local_shipping"
+    }
+  },
+  {
+    "model": "shipments.shipmentevent",
+    "pk": 4,
+    "fields": {
+      "shipment": 3,
+      "timestamp": "2023-12-11T10:00:00Z",
+      "description": "Shipment departed from origin",
+      "location": "Seattle, WA",
+      "icon": "local_shipping"
+    }
+  },
+  {
+    "model": "shipments.shipmentevent",
+    "pk": 5,
+    "fields": {
+      "shipment": 3,
+      "timestamp": "2023-12-14T11:00:00Z",
+      "description": "Delayed due to weather",
+      "location": "Salt Lake City, UT",
+      "icon": "warning"
+    }
+  }
+]

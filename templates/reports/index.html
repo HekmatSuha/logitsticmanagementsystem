@@ -65,26 +65,195 @@
 
       <div class="rounded-xl border border-[#cfdbe7] bg-white dark:border-slate-700 dark:bg-slate-900">
         <div class="border-b border-[#cfdbe7] px-4 dark:border-slate-700">
-          <div class="flex gap-8">
-            <span class="flex flex-col items-center justify-center border-b-[3px] border-b-primary pb-[13px] pt-4 text-slate-900 dark:text-slate-50">
-              <p class="text-sm font-bold leading-normal tracking-[0.015em]">Visualizations</p>
-            </span>
-            <span class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent pb-[13px] pt-4 text-slate-500 dark:text-slate-400">
-              <p class="text-sm font-bold leading-normal tracking-[0.015em]">Raw Data</p>
-            </span>
-          </div>
+          <nav role="tablist" aria-label="Report data views" class="flex gap-8" data-tablist>
+            {% for tab in tabs %}
+            {% with is_active=active_tab == tab.key %}
+            <button
+              type="submit"
+              form="tab-query-form"
+              name="tab"
+              value="{{ tab.key }}"
+              role="tab"
+              id="tab-{{ tab.key }}"
+              aria-controls="panel-{{ tab.key }}"
+              aria-selected="{{ is_active|yesno:'true,false' }}"
+              tabindex="{% if is_active %}0{% else %}-1{% endif %}"
+              data-tab-target="{{ tab.key }}"
+              data-active-class="border-b-primary text-slate-900 dark:text-slate-50"
+              data-inactive-class="border-b-transparent text-slate-500 dark:text-slate-400"
+              class="flex flex-col items-center justify-center border-b-[3px] pb-[13px] pt-4 text-sm font-bold leading-normal tracking-[0.015em] transition-colors {{ 'border-b-primary text-slate-900 dark:text-slate-50' if is_active else 'border-b-transparent text-slate-500 dark:text-slate-400' }}"
+            >
+              <span>{{ tab.label }}</span>
+            </button>
+            {% endwith %}
+            {% endfor %}
+          </nav>
+          <form id="tab-query-form" method="get" class="hidden">
+            {% for key, value in current_query_params.items %}
+            <input type="hidden" name="{{ key }}" value="{{ value }}"/>
+            {% endfor %}
+          </form>
         </div>
         <div class="p-6">
           <div class="mb-4 flex flex-col gap-1">
             <h3 class="font-bold text-slate-900 dark:text-slate-50">{{ selected_report }}</h3>
             <p class="text-sm text-slate-500 dark:text-slate-400">Performance over the selected period</p>
           </div>
-          <div class="flex h-80 w-full items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800">
-            <img src="{{ chart_image }}" alt="Delivery performance chart" class="opacity-40 dark:invert"/>
+          <div
+            id="panel-visualizations"
+            role="tabpanel"
+            aria-labelledby="tab-visualizations"
+            data-tab-panel="visualizations"
+            {% if active_tab != 'visualizations' %}hidden{% endif %}
+          >
+            <div class="flex h-80 w-full items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800">
+              <img src="{{ chart_image }}" alt="Delivery performance chart" class="opacity-40 dark:invert"/>
+            </div>
+          </div>
+          <div
+            id="panel-raw"
+            role="tabpanel"
+            aria-labelledby="tab-raw"
+            data-tab-panel="raw"
+            {% if active_tab != 'raw' %}hidden{% endif %}
+          >
+            <div class="flex flex-col gap-4">
+              <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-slate-600 dark:text-slate-300">Download a CSV export of the current filters or review the latest shipment activity.</p>
+                <a
+                  href="#"
+                  class="inline-flex items-center gap-2 rounded-lg border border-primary px-3 py-2 text-sm font-semibold text-primary transition hover:bg-primary hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                >
+                  <span class="material-symbols-outlined text-base" style="font-variation-settings: 'FILL' 1;">file_download</span>
+                  Export CSV
+                </a>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200 text-left text-sm text-slate-700 dark:divide-slate-700 dark:text-slate-200">
+                  <thead class="bg-slate-50 dark:bg-slate-800">
+                    <tr>
+                      <th scope="col" class="px-4 py-3 font-semibold">Shipment ID</th>
+                      <th scope="col" class="px-4 py-3 font-semibold">Status</th>
+                      <th scope="col" class="px-4 py-3 font-semibold">Origin</th>
+                      <th scope="col" class="px-4 py-3 font-semibold">Destination</th>
+                      <th scope="col" class="px-4 py-3 font-semibold">Cost</th>
+                      <th scope="col" class="px-4 py-3 font-semibold">Last Updated</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                    {% for row in raw_data_records %}
+                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800">
+                      <td class="px-4 py-3 font-semibold text-slate-900 dark:text-slate-100">{{ row.shipment_id }}</td>
+                      <td class="px-4 py-3">{{ row.status }}</td>
+                      <td class="px-4 py-3">{{ row.origin }}</td>
+                      <td class="px-4 py-3">{{ row.destination }}</td>
+                      <td class="px-4 py-3">{{ row.cost }}</td>
+                      <td class="px-4 py-3">{{ row.updated }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                      <td colspan="6" class="px-4 py-6 text-center text-slate-500 dark:text-slate-400">No raw data available for the current filters.</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
   </div>
 </div>
+<script>
+  (function () {
+    const tablist = document.querySelector('[data-tablist]');
+    const tabForm = document.getElementById('tab-query-form');
+    if (!tablist || !tabForm) {
+      return;
+    }
+
+    const tabs = Array.from(tablist.querySelectorAll('[role="tab"]'));
+    const panels = Array.from(document.querySelectorAll('[data-tab-panel]'));
+
+    function getParamsWithTab(tabKey) {
+      const formData = new FormData(tabForm);
+      formData.set('tab', tabKey);
+      return new URLSearchParams(formData.entries());
+    }
+
+    function updateUrl(tabKey) {
+      const params = getParamsWithTab(tabKey);
+      const paramString = params.toString();
+      const url = paramString ? `${window.location.pathname}?${paramString}` : window.location.pathname;
+      window.history.replaceState(null, '', url);
+    }
+
+    function setActiveTab(tabKey, { focusTab = false, updateHistory = false } = {}) {
+      tabs.forEach((tab) => {
+        const isActive = tab.dataset.tabTarget === tabKey;
+        tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        tab.tabIndex = isActive ? 0 : -1;
+        const activeClasses = tab.dataset.activeClass?.split(' ') ?? [];
+        const inactiveClasses = tab.dataset.inactiveClass?.split(' ') ?? [];
+        if (isActive) {
+          tab.classList.add(...activeClasses);
+          tab.classList.remove(...inactiveClasses);
+        } else {
+          tab.classList.add(...inactiveClasses);
+          tab.classList.remove(...activeClasses);
+        }
+        if (focusTab && isActive) {
+          tab.focus();
+        }
+      });
+
+      panels.forEach((panel) => {
+        if (panel.dataset.tabPanel === tabKey) {
+          panel.removeAttribute('hidden');
+        } else {
+          panel.setAttribute('hidden', '');
+        }
+      });
+
+      if (updateHistory) {
+        updateUrl(tabKey);
+      }
+    }
+
+    function handleClick(event) {
+      const tab = event.currentTarget;
+      const tabKey = tab.dataset.tabTarget;
+      if (!tabKey) {
+        return;
+      }
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+        return;
+      }
+      event.preventDefault();
+      setActiveTab(tabKey, { focusTab: true, updateHistory: true });
+    }
+
+    function handleKeydown(event) {
+      const { key } = event;
+      if (key !== 'ArrowLeft' && key !== 'ArrowRight') {
+        return;
+      }
+      event.preventDefault();
+      const currentIndex = tabs.indexOf(event.currentTarget);
+      if (currentIndex === -1) {
+        return;
+      }
+      const direction = key === 'ArrowRight' ? 1 : -1;
+      const nextIndex = (currentIndex + direction + tabs.length) % tabs.length;
+      const nextTab = tabs[nextIndex];
+      setActiveTab(nextTab.dataset.tabTarget, { focusTab: true, updateHistory: true });
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', handleClick);
+      tab.addEventListener('keydown', handleKeydown);
+    });
+  })();
+</script>
 {% endblock %}

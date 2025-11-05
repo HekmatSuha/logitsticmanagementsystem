@@ -1,6 +1,7 @@
 import json
 
 from django.http import HttpResponse
+from django.shortcuts import render
 from datetime import timedelta
 
 from django.db.models import Count, F, Q, Sum
@@ -238,3 +239,49 @@ class DashboardView(TemplateView):
 
 def healthcheck(request):
     return HttpResponse("ok")
+
+
+def global_search(request):
+    query = request.GET.get("q", "").strip()
+
+    shipments = []
+    orders = []
+    inventory_items = []
+    total_results = 0
+
+    if query:
+        shipment_filters = Q(tracking_id__icontains=query) | Q(origin__icontains=query) | Q(
+            destination__icontains=query
+        ) | Q(carrier__icontains=query) | Q(contents__icontains=query)
+        shipments = list(
+            Shipment.objects.filter(shipment_filters).order_by("-last_updated")[:25]
+        )
+
+        order_filters = Q(customer_name__icontains=query) | Q(status__icontains=query)
+        if query.isdigit():
+            order_filters |= Q(pk=int(query))
+        orders = list(Order.objects.filter(order_filters).order_by("-order_date")[:25])
+
+        inventory_filters = (
+            Q(product__name__icontains=query)
+            | Q(product__sku__icontains=query)
+            | Q(warehouse__name__icontains=query)
+        )
+        inventory_items = list(
+            StockItem.objects.select_related("product", "warehouse")
+            .filter(inventory_filters)
+            .order_by("product__name")[:25]
+        )
+
+        total_results = len(shipments) + len(orders) + len(inventory_items)
+
+    context = {
+        "query": query,
+        "shipments": shipments,
+        "orders": orders,
+        "inventory_items": inventory_items,
+        "total_results": total_results,
+        "has_query": bool(query),
+    }
+
+    return render(request, "search_results.html", context)

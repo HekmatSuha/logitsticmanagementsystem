@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Search{% if query %} · {{ query }}{% endif %}{% endblock %}
+{% block content %}
+<div class="space-y-8 p-8">
+  <div class="flex flex-col gap-2">
+    <h1 class="text-2xl font-semibold text-text-light dark:text-text-dark">Global search</h1>
+    {% if has_query %}
+    <p class="text-sm text-gray-600 dark:text-gray-400">
+      Showing {{ total_results }} result{{ total_results|pluralize }} for
+      <span class="font-medium text-text-light dark:text-text-dark">"{{ query }}"</span>.
+    </p>
+    {% else %}
+    <p class="text-sm text-gray-600 dark:text-gray-400">
+      Enter a keyword above to search shipments, orders, and inventory items.
+    </p>
+    {% endif %}
+  </div>
+
+  {% if has_query %}
+    {% if total_results %}
+    <div class="space-y-10">
+      {% if shipments %}
+      <section class="space-y-4">
+        <header class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-text-light dark:text-text-dark">Shipments</h2>
+          <span class="text-sm text-gray-500 dark:text-gray-400">{{ shipments|length }} match{{ shipments|length|pluralize }}</span>
+        </header>
+        <ul class="divide-y divide-border-light overflow-hidden rounded-lg border border-border-light bg-card-light dark:divide-border-dark dark:border-border-dark dark:bg-card-dark">
+          {% for shipment in shipments %}
+          <li class="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <a
+                href="{% url 'shipments:detail' shipment.pk %}"
+                class="font-medium text-primary hover:underline"
+              >
+                {{ shipment.tracking_id }}
+              </a>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {{ shipment.origin }} → {{ shipment.destination }} · {{ shipment.get_status_display }}
+              </p>
+            </div>
+            {% if shipment.last_updated %}
+            <p class="text-xs text-gray-500 dark:text-gray-500">Updated {{ shipment.last_updated|date:"M j, Y" }}</p>
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+      </section>
+      {% endif %}
+
+      {% if orders %}
+      <section class="space-y-4">
+        <header class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-text-light dark:text-text-dark">Orders</h2>
+          <span class="text-sm text-gray-500 dark:text-gray-400">{{ orders|length }} match{{ orders|length|pluralize }}</span>
+        </header>
+        <ul class="divide-y divide-border-light overflow-hidden rounded-lg border border-border-light bg-card-light dark:divide-border-dark dark:border-border-dark dark:bg-card-dark">
+          {% for order in orders %}
+          <li class="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <span class="font-medium text-text-light dark:text-text-dark">Order #{{ order.pk }}</span>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {{ order.customer_name }} · {{ order.order_date|date:"M j, Y" }} · {{ order.status|title }}
+              </p>
+            </div>
+            <a
+              href="{% url 'orders:invoice' order.pk %}"
+              class="text-sm font-medium text-primary hover:underline"
+            >
+              View order
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </section>
+      {% endif %}
+
+      {% if inventory_items %}
+      <section class="space-y-4">
+        <header class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-text-light dark:text-text-dark">Inventory</h2>
+          <span class="text-sm text-gray-500 dark:text-gray-400">{{ inventory_items|length }} match{{ inventory_items|length|pluralize }}</span>
+        </header>
+        <ul class="divide-y divide-border-light overflow-hidden rounded-lg border border-border-light bg-card-light dark:divide-border-dark dark:border-border-dark dark:bg-card-dark">
+          {% for item in inventory_items %}
+          <li class="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <a
+                href="{% url 'inventory:detail' item.pk %}"
+                class="font-medium text-primary hover:underline"
+              >
+                {{ item.product.name }}
+              </a>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                SKU {{ item.product.sku }} · {{ item.warehouse.name }} · {{ item.quantity }} in stock
+              </p>
+            </div>
+            <a
+              href="{% url 'inventory:list' %}?q={{ query|urlencode }}"
+              class="text-sm font-medium text-primary hover:underline"
+            >
+              View inventory
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </section>
+      {% endif %}
+    </div>
+    {% else %}
+    <div class="rounded-lg border border-dashed border-border-light bg-card-light p-6 text-center text-sm text-gray-600 dark:border-border-dark dark:bg-card-dark dark:text-gray-400">
+      No matches found for <span class="font-medium text-text-light dark:text-text-dark">"{{ query }}"</span>. Try a different keyword or check your spelling.
+    </div>
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

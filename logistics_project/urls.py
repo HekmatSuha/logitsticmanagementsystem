@@ -1,10 +1,11 @@
 from django.contrib import admin
 from django.urls import path, include
-from core.views import DashboardView, healthcheck
+from core.views import DashboardView, global_search, healthcheck
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", DashboardView.as_view(), name="dashboard"),
+    path("search/", global_search, name="global_search"),
     path("health/", healthcheck, name="health"),
     path("shipments/", include("shipments.urls")),
     path("inventory/", include("inventory.urls")),

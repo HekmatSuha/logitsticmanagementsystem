@@ -1,4 +1,5 @@
 from django.contrib.auth import login
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import Permission, User
 from django.contrib.auth.views import LoginView
 from django.db.models import Q
@@ -8,7 +9,7 @@ from django.views.generic import CreateView, ListView
 from .forms import StyledAuthenticationForm, UserRegistrationForm
 
 
-class UserListView(ListView):
+class UserListView(LoginRequiredMixin, ListView):
     template_name = "users/list.html"
     model = User
     context_object_name = "users"

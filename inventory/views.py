@@ -1,4 +1,6 @@
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import F, Q, Sum
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
@@ -9,7 +11,7 @@ from .forms import InventoryItemForm
 from .models import StockItem
 
 
-class InventoryListView(ListView):
+class InventoryListView(LoginRequiredMixin, ListView):
     template_name = "inventory/list.html"
     model = StockItem
     context_object_name = "items"
@@ -71,12 +73,12 @@ class InventoryListView(ListView):
         return ctx
 
 
-class InventoryDetailView(DetailView):
+class InventoryDetailView(LoginRequiredMixin, DetailView):
     template_name = "inventory/detail.html"
     model = StockItem
 
 
-class InventoryCreateView(FormView):
+class InventoryCreateView(LoginRequiredMixin, FormView):
     template_name = "inventory/create.html"
     success_url = reverse_lazy("inventory:list")
     form_class = InventoryItemForm
@@ -94,6 +96,7 @@ class InventoryCreateView(FormView):
         return super().form_invalid(form)
 
 
+@login_required
 @require_POST
 def inventory_bulk_action(request):
     action = request.POST.get("action")

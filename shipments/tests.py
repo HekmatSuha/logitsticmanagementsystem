@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -7,6 +8,10 @@ from .models import Shipment, ShipmentEvent
 
 class ShipmentListViewTests(TestCase):
     def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="shipper", password="test-pass"
+        )
+        self.client.login(username="shipper", password="test-pass")
         self.active_shipment = Shipment.objects.create(
             tracking_id="TRACK123",
             origin="New York, NY",
@@ -29,6 +34,14 @@ class ShipmentListViewTests(TestCase):
             status="delivered",
             priority="low",
             eta=timezone.now() - timezone.timedelta(days=1),
+        )
+
+    def test_list_requires_login(self):
+        self.client.logout()
+        response = self.client.get(reverse("shipments:list"))
+        self.assertRedirects(
+            response,
+            f"{reverse('login')}?next={reverse('shipments:list')}",
         )
 
     def test_route_uses_html_arrow_entity(self):
@@ -93,3 +106,9 @@ class ShipmentListViewTests(TestCase):
         self.assertTrue(
             self.active_shipment.events.filter(description="Arrived at facility").exists()
         )
+
+    def test_detail_requires_login(self):
+        self.client.logout()
+        url = reverse("shipments:detail", args=[self.active_shipment.pk])
+        response = self.client.get(url)
+        self.assertRedirects(response, f"{reverse('login')}?next={url}")

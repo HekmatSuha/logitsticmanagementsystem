@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Case, F, IntegerField, Q, When
 from django.urls import reverse_lazy, reverse
 from urllib.parse import urlencode
@@ -9,7 +10,7 @@ from .forms import ShipmentForm, ShipmentEventForm
 from .models import Shipment
 
 
-class ShipmentListView(ListView):
+class ShipmentListView(LoginRequiredMixin, ListView):
     template_name = "shipments/list.html"
     model = Shipment
     context_object_name = "shipments"
@@ -116,7 +117,7 @@ class ShipmentListView(ListView):
         return ctx
 
 
-class ShipmentCreateView(CreateView):
+class ShipmentCreateView(LoginRequiredMixin, CreateView):
     template_name = "shipments/create.html"
     model = Shipment
     form_class = ShipmentForm
@@ -131,7 +132,7 @@ class ShipmentCreateView(CreateView):
         return super().form_invalid(form)
 
 
-class ShipmentDetailView(FormMixin, DetailView):
+class ShipmentDetailView(LoginRequiredMixin, FormMixin, DetailView):
     template_name = "shipments/detail.html"
     queryset = Shipment.objects.prefetch_related("events")
     form_class = ShipmentEventForm

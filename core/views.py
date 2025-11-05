@@ -1,21 +1,22 @@
 import json
-
-from django.http import HttpResponse
-from django.shortcuts import render
 from datetime import timedelta
+from urllib.parse import urlencode
 
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count, F, Q, Sum
 from django.db.models.functions import TruncDate
+from django.http import HttpResponse
+from django.shortcuts import render
 from django.utils import timezone
 from django.views.generic import TemplateView
-from urllib.parse import urlencode
 
 from inventory.models import StockItem
 from orders.models import Order
 from shipments.models import Shipment
 
 
-class DashboardView(TemplateView):
+class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = "dashboard.html"
 
     def get_context_data(self, **kwargs):
@@ -241,6 +242,7 @@ def healthcheck(request):
     return HttpResponse("ok")
 
 
+@login_required
 def global_search(request):
     query = request.GET.get("q", "").strip()
 

@@ -1,6 +1,6 @@
 from urllib.parse import urlencode
-
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, DetailView
@@ -9,7 +9,7 @@ from .forms import OrderForm
 from .models import Order
 
 
-class OrderListView(ListView):
+class OrderListView(LoginRequiredMixin, ListView):
     template_name = "orders/list.html"
     model = Order
     context_object_name = "orders"
@@ -88,7 +88,7 @@ class OrderListView(ListView):
         return ctx
 
 
-class OrderCreateView(CreateView):
+class OrderCreateView(LoginRequiredMixin, CreateView):
     template_name = "orders/create.html"
     model = Order
     form_class = OrderForm
@@ -103,7 +103,7 @@ class OrderCreateView(CreateView):
         return super().form_invalid(form)
 
 
-class OrderInvoiceView(DetailView):
+class OrderInvoiceView(LoginRequiredMixin, DetailView):
     model = Order
     template_name = "orders/invoice.html"
     context_object_name = "order"

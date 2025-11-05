@@ -1,5 +1,6 @@
 from datetime import date
 
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
@@ -8,6 +9,10 @@ from .models import Order
 
 class OrderListViewTests(TestCase):
     def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="orders", password="test-pass"
+        )
+        self.client.login(username="orders", password="test-pass")
         self.recent = Order.objects.create(
             customer_name="Jane Smith",
             order_date=date(2024, 10, 25),
@@ -19,6 +24,14 @@ class OrderListViewTests(TestCase):
             order_date=date(2024, 10, 20),
             total_amount=250,
             status="delivered",
+        )
+
+    def test_list_requires_login(self):
+        self.client.logout()
+        response = self.client.get(reverse("orders:list"))
+        self.assertRedirects(
+            response,
+            f"{reverse('login')}?next={reverse('orders:list')}",
         )
 
     def test_search_filters_by_customer_name(self):
@@ -44,3 +57,9 @@ class OrderListViewTests(TestCase):
         )
         self.assertRedirects(response, reverse("orders:list"))
         self.assertTrue(Order.objects.filter(customer_name="Acme Corp").exists())
+
+    def test_invoice_requires_login(self):
+        self.client.logout()
+        url = reverse("orders:invoice", args=[self.recent.pk])
+        response = self.client.get(url)
+        self.assertRedirects(response, f"{reverse('login')}?next={url}")

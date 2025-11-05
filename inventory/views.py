@@ -33,29 +33,39 @@ class InventoryListView(ListView):
         total_units = (
             StockItem.objects.aggregate(total_units=Sum("quantity"))["total_units"] or 0
         )
+        gradients = [
+            "from-purple-500 to-violet-600",
+            "from-sky-500 to-cyan-600",
+            "from-emerald-500 to-lime-600",
+        ]
+        stats = [
+            {
+                "label": "Total Items",
+                "value": f"{total_items:,}",
+                "change": "+0.0%",
+                "tone": "success",
+            },
+            {
+                "label": "Items with Low Stock",
+                "value": f"{low_stock_count:,}",
+                "change": "+0.0%",
+                "tone": "danger",
+            },
+            {
+                "label": "Total Units Available",
+                "value": f"{total_units:,}",
+                "change": "+0.0%",
+                "tone": "success",
+            },
+        ]
+
+        for stat, gradient in zip(stats, gradients):
+            stat["gradient"] = gradient
+
         ctx.update(
             {
                 "search_query": self.request.GET.get("q", "").strip(),
-                "stats": [
-                    {
-                        "label": "Total Items",
-                        "value": f"{total_items:,}",
-                        "change": "+0.0%",
-                        "tone": "success",
-                    },
-                    {
-                        "label": "Items with Low Stock",
-                        "value": f"{low_stock_count:,}",
-                        "change": "+0.0%",
-                        "tone": "danger",
-                    },
-                    {
-                        "label": "Total Units Available",
-                        "value": f"{total_units:,}",
-                        "change": "+0.0%",
-                        "tone": "success",
-                    },
-                ],
+                "stats": stats,
             }
         )
         return ctx

@@ -1,0 +1,200 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Logistics Pro &mdash; Create Account</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#1173d4",
+              emerald: "#16a34a",
+              slate: {
+                950: "#0f172a",
+              },
+            },
+            fontFamily: { display: ["Inter", "sans-serif"] },
+          },
+        },
+      };
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings: "FILL" 0, "wght" 500, "GRAD" 0, "opsz" 24;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-slate-950 font-display">
+    <div
+      class="absolute inset-0 -z-10 overflow-hidden bg-gradient-to-br from-slate-950 via-primary/30 to-emerald/40"
+    >
+      <div class="absolute -left-20 top-10 size-[28rem] rounded-full bg-primary/20 blur-3xl"></div>
+      <div class="absolute -right-32 bottom-0 size-[28rem] rounded-full bg-emerald/25 blur-3xl"></div>
+    </div>
+
+    <div class="flex min-h-screen items-center justify-center px-6 py-12">
+      <div
+        class="relative grid w-full max-w-5xl grid-cols-1 overflow-hidden rounded-3xl bg-white/95 shadow-2xl ring-1 ring-white/20 backdrop-blur-lg md:grid-cols-[1fr,1.05fr]"
+      >
+        <div class="relative hidden flex-col justify-between bg-primary/95 p-12 text-white md:flex">
+          <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=900&q=80')] bg-cover bg-center opacity-25"></div>
+          <div class="relative">
+            <span class="material-symbols-outlined text-4xl">hub</span>
+            <h1 class="mt-6 text-4xl font-bold leading-tight">
+              Build your logistics hub
+            </h1>
+            <p class="mt-4 text-base leading-relaxed text-white/80">
+              Create an account to orchestrate shipments, inventory, and
+              customers from one beautiful workspace.
+            </p>
+          </div>
+          <dl class="relative mt-12 grid gap-6 text-white/80">
+            <div class="rounded-2xl border border-white/15 bg-white/10 p-6">
+              <dt class="text-lg font-semibold text-white">Intelligent insights</dt>
+              <dd class="mt-2 text-sm">
+                Forecast supply and demand with data-backed recommendations and
+                trend analysis.
+              </dd>
+            </div>
+            <div class="rounded-2xl border border-white/15 bg-white/10 p-6">
+              <dt class="text-lg font-semibold text-white">Seamless onboarding</dt>
+              <dd class="mt-2 text-sm">
+                Integrate existing tools, import SKUs, and configure workflows in
+                minutes.
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="flex flex-col justify-center px-8 py-10 md:px-12">
+          <div class="mb-10 flex items-center gap-3 md:hidden">
+            <div class="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <span class="material-symbols-outlined text-2xl">local_shipping</span>
+            </div>
+            <div>
+              <p class="text-lg font-semibold text-slate-800">Logistics Pro</p>
+              <p class="text-sm text-slate-500">Operations Suite</p>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <h2 class="text-3xl font-semibold text-slate-900">Create your account</h2>
+            <p class="text-sm text-slate-500">
+              Join the platform trusted by growing logistics and fulfillment teams.
+            </p>
+          </div>
+
+          <form method="post" class="mt-8 space-y-6">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+            <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+              {% for error in form.non_field_errors %} {{ error }} {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="grid gap-6 md:grid-cols-2">
+              <div class="space-y-1">
+                <label for="id_first_name" class="text-sm font-medium text-slate-700"
+                  >First name</label
+                >
+                {{ form.first_name }}
+                {% if form.first_name.errors %}
+                <p class="text-sm text-red-600">
+                  {% for error in form.first_name.errors %} {{ error }} {% endfor %}
+                </p>
+                {% endif %}
+              </div>
+              <div class="space-y-1">
+                <label for="id_last_name" class="text-sm font-medium text-slate-700"
+                  >Last name</label
+                >
+                {{ form.last_name }}
+                {% if form.last_name.errors %}
+                <p class="text-sm text-red-600">
+                  {% for error in form.last_name.errors %} {{ error }} {% endfor %}
+                </p>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="space-y-1">
+              <label for="id_email" class="text-sm font-medium text-slate-700">Work email</label>
+              {{ form.email }}
+              {% if form.email.errors %}
+              <p class="text-sm text-red-600">
+                {% for error in form.email.errors %} {{ error }} {% endfor %}
+              </p>
+              {% endif %}
+            </div>
+
+            <div class="space-y-1">
+              <label for="id_username" class="text-sm font-medium text-slate-700">Username</label>
+              {{ form.username }}
+              {% if form.username.errors %}
+              <p class="text-sm text-red-600">
+                {% for error in form.username.errors %} {{ error }} {% endfor %}
+              </p>
+              {% endif %}
+            </div>
+
+            <div class="grid gap-6 md:grid-cols-2">
+              <div class="space-y-1">
+                <label for="id_password1" class="text-sm font-medium text-slate-700"
+                  >Password</label
+                >
+                {{ form.password1 }}
+                {% if form.password1.errors %}
+                <p class="text-sm text-red-600">
+                  {% for error in form.password1.errors %} {{ error }} {% endfor %}
+                </p>
+                {% endif %}
+                {% if form.password1.help_text %}
+                <p class="text-xs text-slate-400">{{ form.password1.help_text|safe }}</p>
+                {% endif %}
+              </div>
+              <div class="space-y-1">
+                <label for="id_password2" class="text-sm font-medium text-slate-700"
+                  >Confirm password</label
+                >
+                {{ form.password2 }}
+                {% if form.password2.errors %}
+                <p class="text-sm text-red-600">
+                  {% for error in form.password2.errors %} {{ error }} {% endfor %}
+                </p>
+                {% endif %}
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/30 transition hover:bg-primary/90 focus:outline-none focus:ring-4 focus:ring-primary/40"
+            >
+              <span class="material-symbols-outlined text-base">rocket_launch</span>
+              Create workspace
+            </button>
+          </form>
+
+          <p class="mt-8 text-center text-sm text-slate-500">
+            Already have an account?
+            <a href="{% url 'login' %}" class="font-semibold text-primary hover:text-primary/80"
+              >Sign in instead</a
+            >.
+          </p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

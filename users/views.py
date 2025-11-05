@@ -1,6 +1,11 @@
+from django.contrib.auth import login
 from django.contrib.auth.models import Permission, User
+from django.contrib.auth.views import LoginView
 from django.db.models import Q
-from django.views.generic import ListView
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, ListView
+
+from .forms import StyledAuthenticationForm, UserRegistrationForm
 
 
 class UserListView(ListView):
@@ -53,3 +58,20 @@ class UserListView(ListView):
             }
         )
         return ctx
+
+
+class CustomLoginView(LoginView):
+    template_name = "registration/login.html"
+    authentication_form = StyledAuthenticationForm
+    redirect_authenticated_user = True
+
+
+class RegisterView(CreateView):
+    template_name = "registration/register.html"
+    form_class = UserRegistrationForm
+    success_url = reverse_lazy("dashboard")
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        login(self.request, self.object)
+        return response

@@ -225,6 +225,26 @@
                 background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCKera53H3U4mXhpnEbk9Ou_r8mu6f43MuSDDiVh5rsnFEKEBS0wEc5h9ArezFikwhpJQzm3MsYrT2swRDmBaHN6ggtjGg9_BF0_lXanZq1_9DEjn2tJevNKGAfLc-5IwGNVbiJRd-36xkfdQNaG_ndlRheSnE8yeuk8wDCcsRanRXvPPYliROdxyeRfscpn9Twx76oE11HL0VTYQ6vG0UPLxA7xCEFoOnHkt02PPk8hodHIRJJvjTGqIQDWdA3cjmRLnbrXDT5dw');
               "
             ></div>
+            {% if request.user.is_authenticated %}
+            <form method="post" action="{% url 'logout' %}" class="m-0">
+              {% csrf_token %}
+              <button
+                type="submit"
+                class="flex items-center gap-2 rounded-lg border border-border-light px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/40 dark:border-border-dark dark:text-gray-300 dark:hover:bg-white/10"
+              >
+                <span class="material-symbols-outlined text-base">logout</span>
+                <span>Sign out</span>
+              </button>
+            </form>
+            {% else %}
+            <a
+              href="{% url 'login' %}"
+              class="flex items-center gap-2 rounded-lg border border-border-light px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/40 dark:border-border-dark dark:text-gray-300 dark:hover:bg-white/10"
+            >
+              <span class="material-symbols-outlined text-base">login</span>
+              <span>Sign in</span>
+            </a>
+            {% endif %}
             {% endblock %}
           </div>
         </header>

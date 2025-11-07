@@ -4,80 +4,336 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Invoice #{{ order.pk }} - Logistics Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <style>
+      :root {
+        color-scheme: light;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #f1f5f9;
+        color: #0f172a;
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .page-shell {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 48px 32px 64px;
+      }
+
+      .invoice-card {
+        background: #ffffff;
+        border-radius: 18px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 25px 55px rgba(15, 23, 42, 0.12);
+        overflow: hidden;
+      }
+
+      .invoice-hero {
+        background: linear-gradient(135deg, #1d4ed8, #0f172a);
+        color: #ffffff;
+        padding: 36px 40px 44px;
+      }
+
+      .invoice-hero h1 {
+        margin: 0;
+        font-size: 30px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+
+      .invoice-hero p {
+        margin: 10px 0 0;
+        font-size: 15px;
+        color: rgba(255, 255, 255, 0.88);
+      }
+
+      .invoice-meta {
+        display: grid;
+        gap: 24px;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        padding: 32px 40px 24px;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      .meta-block h2 {
+        margin: 0 0 8px;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #475569;
+      }
+
+      .meta-block p {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #0f172a;
+      }
+
+      .meta-inline {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px 24px;
+        padding: 0 40px 28px;
+      }
+
+      .meta-item {
+        display: flex;
+        flex-direction: column;
+        min-width: 180px;
+      }
+
+      .meta-item span:first-child {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.11em;
+        color: #475569;
+        font-weight: 600;
+      }
+
+      .meta-item span:last-child {
+        margin-top: 6px;
+        font-size: 17px;
+        font-weight: 600;
+        color: #1e293b;
+      }
+
+      .status-pill {
+        align-self: flex-start;
+        margin-top: 14px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        background: #dcfce7;
+        color: #166534;
+      }
+
+      .status-pill[data-status="pending"] {
+        background: #fef3c7;
+        color: #92400e;
+      }
+
+      .status-pill[data-status="processing"] {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+
+      .status-pill[data-status="cancelled"] {
+        background: #fee2e2;
+        color: #b91c1c;
+      }
+
+      .totals-panel {
+        padding: 24px 40px 36px;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px 40px;
+        align-items: center;
+      }
+
+      .totals-panel h3 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 700;
+        color: #0f172a;
+      }
+
+      .totals-panel p {
+        margin: 4px 0 0;
+        font-size: 14px;
+        color: #475569;
+      }
+
+      .totals-amount {
+        margin-left: auto;
+        text-align: right;
+      }
+
+      .totals-amount span {
+        display: block;
+        font-weight: 700;
+      }
+
+      .totals-amount span:first-child {
+        font-size: 15px;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .totals-amount span:last-child {
+        font-size: 32px;
+        color: #0f172a;
+      }
+
+      .print-actions {
+        margin-top: 32px;
+        display: flex;
+        justify-content: center;
+      }
+
+      .print-button {
+        border: none;
+        border-radius: 999px;
+        background: #1d4ed8;
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 15px;
+        padding: 12px 28px;
+        cursor: pointer;
+        box-shadow: 0 12px 30px rgba(30, 64, 175, 0.22);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      .print-button:focus {
+        outline: 3px solid rgba(59, 130, 246, 0.45);
+        outline-offset: 2px;
+      }
+
+      .print-button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 14px 35px rgba(30, 64, 175, 0.3);
+      }
+
+      .fine-print {
+        margin-top: 36px;
+        text-align: center;
+        font-size: 13px;
+        color: #64748b;
+      }
+
+      @media (max-width: 640px) {
+        .page-shell {
+          padding: 32px 20px 48px;
+        }
+
+        .invoice-hero {
+          padding: 28px 24px 36px;
+        }
+
+        .invoice-meta,
+        .meta-inline,
+        .totals-panel {
+          padding-left: 24px;
+          padding-right: 24px;
+        }
+
+        .totals-amount {
+          margin-left: 0;
+          text-align: left;
+        }
+      }
+
       @media print {
         body {
-          margin: 0;
+          background: #ffffff;
         }
-        .no-print {
+
+        .page-shell {
+          padding: 0 16px 32px;
+        }
+
+        .invoice-card {
+          border-radius: 0;
+          box-shadow: none;
+          border: none;
+        }
+
+        .invoice-hero {
+          background: #111827;
+        }
+
+        .totals-panel {
+          background: #ffffff;
+          border-top: none;
+        }
+
+        .print-actions,
+        .fine-print {
           display: none;
         }
-      }
-      body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-        color: #333;
-      }
-      .header {
-        text-align: center;
-        border-bottom: 2px solid #333;
-        padding-bottom: 10px;
-        margin-bottom: 20px;
-      }
-      .invoice-details {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 20px;
-      }
-      .customer-info,
-      .order-info {
-        flex: 1;
-      }
-      .total {
-        font-size: 18px;
-        font-weight: bold;
-        text-align: right;
-        margin-top: 20px;
-      }
-      .print-button {
-        margin-top: 20px;
-        text-align: center;
       }
     </style>
   </head>
   <body>
-    <div class="header">
-      <h1>Logistics Pro</h1>
-      <h2>Invoice</h2>
-    </div>
+    <div class="page-shell">
+      <article class="invoice-card">
+        <header class="invoice-hero">
+          <h1>Invoice #{{ order.pk }}</h1>
+          <p>Logistics Pro &mdash; Customer billing summary</p>
+        </header>
 
-    <div class="invoice-details">
-      <div class="customer-info">
-        <h3>Bill To:</h3>
-        <p>{{ order.customer_name }}</p>
+        <section class="invoice-meta" aria-labelledby="billing-heading">
+          <div class="meta-block" id="billing-heading">
+            <h2>Bill To</h2>
+            <p>{{ order.customer_name }}</p>
+          </div>
+          <div class="meta-block">
+            <h2>Issued On</h2>
+            <p>{{ order.order_date|date:"F j, Y" }}</p>
+          </div>
+        </section>
+
+        <section class="meta-inline" aria-label="Invoice summary details">
+          <div class="meta-item">
+            <span>Invoice Number</span>
+            <span>#{{ order.pk }}</span>
+          </div>
+          <div class="meta-item">
+            <span>Status</span>
+            <span>
+              <span class="status-pill" data-status="{{ order.status }}">{{ order.status|title }}</span>
+            </span>
+          </div>
+        </section>
+
+        <section class="totals-panel" aria-label="Amount due">
+          <div>
+            <h3>Payment Summary</h3>
+            <p>Review the total due for this invoice.</p>
+          </div>
+          <div class="totals-amount">
+            <span>Total Due</span>
+            <span>${{ order.total_amount }}</span>
+          </div>
+        </section>
+      </article>
+
+      <div class="print-actions no-print">
+        <button type="button" class="print-button" onclick="window.print()">Print invoice</button>
       </div>
-      <div class="order-info">
-        <p><strong>Invoice #:</strong> {{ order.pk }}</p>
-        <p><strong>Date:</strong> {{ order.order_date|date:"M j, Y" }}</p>
-        <p><strong>Status:</strong> {{ order.status|title }}</p>
-      </div>
-    </div>
 
-    <div class="total">
-      <p>Total Amount: ${{ order.total_amount }}</p>
-    </div>
-
-    <div class="print-button no-print">
-      <button onclick="window.print()">Print Invoice</button>
+      <p class="fine-print no-print">
+        Need a PDF copy? Use your browser's print dialog to save this invoice.
+      </p>
     </div>
 
     <script>
-      // Auto-print when loaded, but allow user to cancel
-      window.onload = function () {
-        setTimeout(function () {
+      window.addEventListener("load", function () {
+        window.setTimeout(function () {
           window.print();
         }, 500);
-      };
+      });
     </script>
   </body>
 </html>
